@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Anno Javanico — Javanese Calendar</title>
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0c0f1b" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e9ebe6" media="(prefers-color-scheme: light)">
+<meta name="description" content="Javanese calendar: Aji Saka and Pawukon reckoning, date conversion, Pranata Mangsa, Palakrama and Petangan Pejah.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Anno Javanico">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c0f1b;--bg2:#0a0d17;--surface:#121727;--surface2:#171d30;--line:#232b42;--line2:#323d5a;
+  --text:#ece7db;--muted:#939bb0;--gold:#cfa95f;--gold2:#eccf8c;--gold-soft:rgba(207,169,95,.11);--on-gold:#1a1306;
+  --red:#e8715d;--red-soft:rgba(232,113,93,.12);--glow:rgba(207,169,95,.10);
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 26px 60px -26px rgba(0,0,0,.75);
+  --serif:'Newsreader','Iowan Old Style','Palatino Linotype',Georgia,serif;
+  --sans:'Figtree',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#e9ebe6;--bg2:#e0e3dc;--surface:#fbfbf8;--surface2:#f3f4ef;--line:#d9dcd2;--line2:#c3c8ba;
+    --text:#171c2b;--muted:#5f687b;--gold:#8b6420;--gold2:#6f4e14;--gold-soft:rgba(139,100,32,.09);--on-gold:#fffaf0;
+    --red:#b83a2d;--red-soft:rgba(184,58,45,.08);--glow:rgba(139,100,32,.10);
+    --shadow:0 1px 2px rgba(30,35,20,.05),0 24px 50px -28px rgba(40,45,25,.30);
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#e9ebe6;--bg2:#e0e3dc;--surface:#fbfbf8;--surface2:#f3f4ef;--line:#d9dcd2;--line2:#c3c8ba;
+  --text:#171c2b;--muted:#5f687b;--gold:#8b6420;--gold2:#6f4e14;--gold-soft:rgba(139,100,32,.09);--on-gold:#fffaf0;
+  --red:#b83a2d;--red-soft:rgba(184,58,45,.08);--glow:rgba(139,100,32,.10);
+  --shadow:0 1px 2px rgba(30,35,20,.05),0 24px 50px -28px rgba(40,45,25,.30);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-padding-top:calc(60px + env(safe-area-inset-top,0px))}
+body{font-family:var(--sans);font-size:15px;line-height:1.5;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(1100px 480px at 50% -180px,var(--glow),transparent 70%);background-repeat:no-repeat;
+  padding:calc(22px + env(safe-area-inset-top,0px)) 16px calc(32px + env(safe-area-inset-bottom,0px));
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;font-variant-numeric:tabular-nums}
+.shell{max-width:1040px;margin:0 auto}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* Header */
+header{display:flex;align-items:center;gap:18px;padding:4px 2px 26px}
+.mark{width:56px;height:56px;flex:none;color:var(--gold)}
+.brand{flex:1;min-width:0}
+.brand h1{font-family:var(--serif);font-weight:400;font-size:2.15rem;letter-spacing:.005em;line-height:1.05;font-variation-settings:"opsz" 72}
+.brand h1 em{font-style:normal;color:inherit}
+.brand p{font-size:.84rem;color:var(--muted);margin-top:7px;letter-spacing:.01em}
+.head-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:8px;font:500 .76rem var(--mono);color:var(--muted);border:1px solid var(--line);
+  background:var(--surface);padding:7px 13px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.icon-btn{width:36px;height:36px;padding:0;border-radius:50%;background:var(--surface);color:var(--muted);
+  border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;font-size:1.15rem;line-height:1;transition:color .2s,border-color .2s}
+.icon-btn:hover{color:var(--gold);border-color:var(--gold)}
+
+/* Tabs */
+nav{display:flex;gap:2px;padding:0 2px;overflow-x:auto;scrollbar-width:none;margin-bottom:24px;position:sticky;
+  top:env(safe-area-inset-top,0px);z-index:5;border-bottom:1px solid var(--line);
+  background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+nav::-webkit-scrollbar{display:none}
+.tab-btn{position:relative;flex:0 0 auto;width:auto;background:transparent;border:0;color:var(--muted);font:500 .88rem var(--sans);
+  padding:15px 15px 14px;cursor:pointer;white-space:nowrap;transition:color .2s}
+.tab-btn::after{content:"";position:absolute;left:13px;right:13px;bottom:-1px;height:2px;border-radius:2px;background:var(--gold);
+  transform:scaleX(0);transition:transform .25s ease}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--text)}
+.tab-btn.active::after{transform:scaleX(1)}
+.tab-btn:focus-visible{outline-offset:-4px;border-radius:8px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:rise .3s ease}
+@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+
+/* Panels */
+.panel{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+.panel::before{content:"";position:absolute;top:-1px;left:14%;right:14%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55}
+.panel-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.panel-title h2{font-family:var(--serif);font-weight:400;font-size:1.55rem;line-height:1.2;letter-spacing:.005em}
+.panel-title span{font-size:.82rem;color:var(--muted)}
+.eyebrow{font-size:.8rem;font-weight:500;color:var(--muted);letter-spacing:.01em}
+
+/* Hero: wuku dial (30 ticks) */
+.hero{position:relative;overflow:hidden;border-radius:20px;padding:32px 30px;margin-bottom:16px;border:1px solid var(--line2);
+  background:linear-gradient(135deg,var(--surface2),var(--surface));box-shadow:var(--shadow)}
+.hero::before,.hero::after{content:"";position:absolute;right:-110px;top:-110px;width:340px;height:340px;border-radius:50%;pointer-events:none}
+.hero::before{background:repeating-conic-gradient(from -.6deg,var(--gold) 0 1.2deg,transparent 1.2deg 12deg);
+  -webkit-mask:radial-gradient(circle closest-side,transparent 76%,#000 77%,#000 90%,transparent 91%);
+  mask:radial-gradient(circle closest-side,transparent 76%,#000 77%,#000 90%,transparent 91%);opacity:.42}
+.hero::after{opacity:.3;background:
+  radial-gradient(circle closest-side,transparent 98.4%,var(--gold) 99.2%,transparent 100%),
+  radial-gradient(circle closest-side,transparent 62.4%,var(--gold) 63.2%,transparent 64%),
+  radial-gradient(circle closest-side,transparent 40.4%,var(--gold) 41.2%,transparent 42%)}
+.hero>*{position:relative;z-index:1}
+.hero .day{font-family:var(--serif);font-size:clamp(2.2rem,7vw,3.7rem);font-weight:400;line-height:1.05;margin:10px 0 8px;letter-spacing:-.005em;font-variation-settings:"opsz" 72}
+.hero .day i{color:var(--gold);font-style:normal}
+.hero .date{font-size:1.05rem;color:var(--muted)}
+.hero .date b{color:var(--text);font-weight:600}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.badge{font-size:.78rem;font-weight:500;padding:5px 12px;border-radius:999px;border:1px solid var(--line2);color:var(--text);background:transparent;white-space:nowrap}
+.badge.gold{border-color:color-mix(in srgb,var(--gold) 60%,transparent);color:var(--gold2);background:var(--gold-soft)}
+.badge.warn{border-color:color-mix(in srgb,var(--red) 60%,transparent);color:var(--red);background:var(--red-soft)}
+
+/* Data grid */
+.data-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(236px,1fr));gap:12px}
+.cell{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;transition:border-color .2s}
+.cell:hover{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.cell .k{font-size:.78rem;font-weight:500;color:var(--muted);margin-bottom:7px}
+.cell .v{font-size:1.04rem;font-weight:500;line-height:1.35}
+.cell .s{font-size:.8rem;color:var(--muted);margin-top:5px;line-height:1.45}
+.cell.wide{grid-column:1/-1}
+.mono{font-family:var(--mono);font-size:.94em}
+.progress{height:6px;border-radius:99px;background:var(--bg2);border:1px solid var(--line);margin:12px 0 4px;overflow:hidden}
+.progress>div{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s}
+.foot-note{margin-top:14px;font:.72rem var(--mono);color:var(--muted);line-height:1.6}
+.btn-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+
+/* Forms */
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;align-items:end}
+.field label{display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:7px;letter-spacing:.01em}
+input,select{width:100%;min-height:44px;padding:10px 14px;border:1px solid var(--line2);border-radius:11px;font:.95rem var(--sans);
+  background:var(--bg2);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}
+input:hover,select:hover{border-color:color-mix(in srgb,var(--gold) 45%,var(--line2))}
+input:focus,select:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+select{appearance:none;-webkit-appearance:none;padding-right:38px;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%23939bb0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+input[type=checkbox]{width:18px;height:18px;min-height:0;padding:0;accent-color:var(--gold);cursor:pointer;flex:none}
+button.primary{width:100%;min-height:44px;padding:10px 22px;border:0;border-radius:11px;font:600 .92rem var(--sans);letter-spacing:.01em;cursor:pointer;
+  background:var(--gold);color:var(--on-gold);box-shadow:inset 0 1px 0 rgba(255,255,255,.22);transition:background .2s,transform .15s}
+button.primary:hover{background:var(--gold2)}
+button.primary:active{transform:translateY(1px)}
+button.ghost{width:auto;padding:8px 18px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--muted);
+  font:500 .82rem var(--sans);cursor:pointer;transition:color .2s,border-color .2s}
+button.ghost:hover{color:var(--gold);border-color:var(--gold)}
+.result{margin-top:22px}
+.placeholder{padding:30px 20px;text-align:center;color:var(--muted);font-size:.9rem;border:1px dashed var(--line2);border-radius:14px}
+.alert{padding:15px 18px;border-radius:12px;border:1px solid color-mix(in srgb,var(--red) 55%,transparent);background:var(--red-soft);color:var(--red);font-size:.92rem;line-height:1.5}
+.ok{border-color:color-mix(in srgb,var(--gold) 55%,transparent);background:var(--gold-soft);color:var(--gold2)}
+.pill-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+/* Calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 14px}
+.cal-head h3{font-family:var(--serif);font-weight:400;font-size:1.85rem;text-align:center;flex:1;letter-spacing:.005em;line-height:1.15}
+.cal-head h3 small{display:block;font:500 .8rem var(--sans);letter-spacing:.01em;color:var(--muted);margin-top:5px}
+.legend{display:flex;gap:8px 20px;flex-wrap:wrap;justify-content:center;font-size:.78rem;color:var(--muted);margin-bottom:14px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:16px}
+table.calendar{width:100%;min-width:600px;border-collapse:separate;border-spacing:0;table-layout:fixed}
+table.calendar th{padding:12px 4px;font:600 .78rem var(--sans);letter-spacing:.02em;color:var(--gold);
+  background:var(--surface2);border-bottom:1px solid var(--line2)}
+table.calendar th:first-child{color:var(--red)}
+table.calendar td{height:100px;padding:10px 4px 8px;text-align:center;vertical-align:top;border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+  background:var(--surface);transition:background .15s}
+table.calendar td:last-child{border-right:0}
+table.calendar tr:last-child td{border-bottom:0}
+table.calendar td:not(.empty-cell):hover{background:var(--surface2)}
+table.calendar td.empty-cell{background:var(--bg2);opacity:.55}
+.jawa-date{font:400 1.9rem var(--serif);line-height:1.1;font-variation-settings:"opsz" 36}
+.pasaran{font:600 .72rem var(--sans);color:var(--gold);margin-top:6px;letter-spacing:.02em}
+.masehi-date{font:400 .7rem var(--sans);font-variant-numeric:tabular-nums;color:var(--muted);margin-top:5px;line-height:1.2;white-space:nowrap}
+.masehi-date b{font-weight:500}.masehi-date em{font-style:normal}
+.masehi-date .s{display:none}
+.wuku{font-size:.64rem;color:var(--muted);margin-top:3px;line-height:1.2;opacity:.85}
+td.minggu .jawa-date{color:var(--red)}
+table.calendar td.suwung{background:linear-gradient(var(--red-soft),var(--red-soft)),var(--surface)}
+table.calendar td.today{box-shadow:inset 0 0 0 2px var(--gold);background:linear-gradient(var(--gold-soft),var(--gold-soft)),var(--surface)}
+td.today .jawa-date{color:var(--gold2)}
+.pm-bar{display:flex;height:14px;border-radius:99px;overflow:hidden;border:1px solid var(--line);margin:16px 0 6px;position:relative}
+.pm-bar span{display:block;height:100%;border-right:1px solid var(--bg)}
+.pm-marker{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--text);box-shadow:0 0 0 2px var(--gold)}
+.pm-axis{display:flex;justify-content:space-between;font:.68rem var(--mono);color:var(--muted)}
+.season-head{display:flex;align-items:baseline;gap:10px;margin:28px 0 12px;padding-top:18px;border-top:1px solid var(--line)}
+.season-head i{width:10px;height:10px;border-radius:50%;align-self:center;flex:none}
+.season-head h4{font-family:var(--serif);font-weight:400;font-size:1.25rem}
+.season-head span{font-size:.8rem;color:var(--muted)}
+.cell.active{border-color:var(--gold);background:linear-gradient(180deg,var(--gold-soft),var(--surface))}
+.cell .note{font-size:.8rem;color:var(--muted);line-height:1.55;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.seg{display:inline-flex;padding:4px;gap:4px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;margin-bottom:18px}
+.seg button{width:auto;padding:8px 18px;border:0;border-radius:9px;background:transparent;color:var(--muted);font:600 .84rem var(--sans);cursor:pointer;transition:color .2s,background .2s}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--gold);color:var(--on-gold)}
+.suwung-note{display:flex;justify-content:center;margin:0 0 14px}
+.tap-hint{text-align:center;font-size:.76rem;color:var(--muted);margin:-2px 0 12px}
+table.calendar td.tap{cursor:pointer;-webkit-tap-highlight-color:transparent}
+table.calendar td.tap:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+table.calendar td.tap:active{background:linear-gradient(var(--gold-soft),var(--gold-soft)),var(--surface)}
+td.newmonth .masehi-date{color:var(--gold2);font-weight:600}
+td.newmonth .masehi-date b{font-weight:700}
+
+/* Detail sheet */
+.sheet{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheet-bg{position:absolute;inset:0;background:rgba(5,7,14,.6);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:fadein .2s}
+.sheet-card{position:relative;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;background:var(--surface);border:1px solid var(--line2);
+  border-radius:24px 24px 0 0;padding:16px 20px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:var(--shadow);animation:slideup .28s cubic-bezier(.2,.8,.2,1)}
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;position:sticky;top:-16px;background:var(--surface);padding:8px 0;z-index:2}
+.sheet-bar .grab{width:40px;height:4px;border-radius:9px;background:var(--line2);position:absolute;left:50%;top:-6px;transform:translateX(-50%)}
+.sheet-bar .eyebrow{flex:1;text-align:center}
+.sheet-card .hero{margin-bottom:12px;padding:24px 22px}
+@media (min-width:720px){
+  .sheet{align-items:center;padding:24px}
+  .sheet-card{border-radius:24px;padding-bottom:24px}
+  .sheet-bar .grab{display:none}
+}
+@keyframes slideup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+.footer{text-align:center;margin-top:32px;font-size:.78rem;color:var(--muted);padding:20px 0 4px;border-top:1px solid var(--line);line-height:1.6}
+
+/* Palakrama */
+.pk-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pk-box{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.pk-box h4{font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:10px;letter-spacing:.01em}
+.pk-box.red h4{color:var(--red)}
+.pk-row{display:flex;justify-content:space-between;gap:12px;font-size:.92rem;padding:8px 0;border-top:1px solid var(--line)}
+.pk-row:first-of-type{border-top:0}
+.pk-row small{display:block;color:var(--muted);font-size:.78rem;margin-top:1px}
+.pk-row b{color:var(--red);font-weight:500;white-space:nowrap}
+.pk-km{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.pk-sec{font-family:var(--serif);font-size:1.2rem;font-weight:400;margin:26px 0 12px}
+
+/* Petangan Pejah */
+.pj-hero{background:var(--gold-soft);border:1px solid color-mix(in srgb,var(--gold) 35%,var(--line2));border-radius:14px;padding:16px 18px}
+.pj-hero .pj-eyebrow{font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:5px}
+.pj-card{border:1px solid var(--line);border-radius:14px;background:var(--surface2);margin-top:12px;overflow:hidden}
+.pj-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 18px;background:var(--bg2);border-bottom:1px solid var(--line)}
+.pj-head b{font-family:var(--serif);font-weight:500;font-size:1.12rem;color:var(--gold2)}
+.pj-head span{font-size:.78rem;color:var(--muted);white-space:nowrap}
+.pj-row{display:grid;grid-template-columns:92px 1fr;gap:14px;padding:12px 18px}
+.pj-row+.pj-row{border-top:1px solid var(--line)}
+.pj-lab{font-size:.78rem;font-weight:500;color:var(--muted);line-height:1.4;padding-top:2px}
+.pj-lab em{display:block;font-style:normal;color:var(--text);font-size:.82rem;margin-top:2px;font-weight:400}
+.pj-main{font-size:1.02rem;font-weight:600;color:var(--text);line-height:1.35}
+.pj-jw{font-size:.9rem;margin-top:3px}
+.pj-ms{font-size:.8rem;color:var(--muted);margin-top:2px}
+.pj-tag{display:inline-block;font-size:.72rem;padding:1px 9px;border-radius:99px;border:1px solid var(--line2);color:var(--muted);margin-left:8px;font-weight:500;vertical-align:1px}
+.pj-tag.warn{border-color:var(--red);color:var(--red)}
+.pj-legend{font-size:.84rem;color:var(--muted);line-height:1.6;margin-top:12px}
+
+/* Responsive */
+@media (max-width:640px){
+  body{padding-left:12px;padding-right:12px}
+  header{flex-wrap:wrap;gap:14px;padding-bottom:20px}.mark{width:44px;height:44px}
+  .head-right{margin-left:0;width:100%}
+  .brand h1{font-size:1.75rem}.brand p{font-size:.78rem}
+  .panel{padding:20px 16px;border-radius:18px}.panel-title h2{font-size:1.35rem}
+  .hero{padding:26px 20px}
+  .hero::before,.hero::after{width:240px;height:240px;right:-84px;top:-84px}
+  .tab-btn{padding:14px 12px 13px;font-size:.84rem}
+  .pk-grid{grid-template-columns:1fr}
+  .pj-row{grid-template-columns:1fr;gap:4px}
+  table.calendar{min-width:0}
+  table.calendar th{font-size:.68rem;letter-spacing:0;padding:10px 0}
+  table.calendar td{height:80px;padding:8px 1px 6px}
+  .jawa-date{font-size:1.4rem}
+  .pasaran{font-size:.58rem;letter-spacing:0;margin-top:5px}
+  .masehi-date{font-size:.58rem;margin-top:4px}.masehi-date .s{display:inline}.masehi-date .f{display:none}
+  .wuku{display:none}
+  .cal-head h3{font-size:1.5rem}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <svg class="mark" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+    <circle cx="32" cy="32" r="29.5"/>
+    <circle cx="32" cy="32" r="24" stroke-width="5" stroke-dasharray="1.3 3.727" opacity=".55"/>
+    <circle cx="32" cy="32" r="19" opacity=".5"/>
+    <path d="M32 20l11.4 8.3-4.4 13.4H25L20.6 28.3z" stroke-linejoin="round"/>
+    <circle cx="32" cy="32" r="2.6" fill="currentColor" stroke="none"/>
+  </svg>
+  <div class="brand"><h1>Anno <em>Javanico</em></h1><p>Javanese calendar: Aji Saka and Pawukon reckoning</p></div>
+  <div class="head-right"><span class="chip" id="clock">—</span><button class="icon-btn" id="theme" title="Toggle theme" aria-label="Toggle theme">◐</button></div>
+</header>
+
+<nav aria-label="Sections">
+  <button class="tab-btn active" data-tab="tab1">Live</button>
+  <button class="tab-btn" data-tab="tab2">Gregorian → Javanese</button>
+  <button class="tab-btn" data-tab="tab3">Javanese → Gregorian</button>
+  <button class="tab-btn" data-tab="tab4">Anggara Kasih</button>
+  <button class="tab-btn" data-tab="tab5">Monthly Calendar</button>
+  <button class="tab-btn" data-tab="tab6">Pranata Mangsa</button>
+  <button class="tab-btn" data-tab="tab7">Palakrama</button>
+  <button class="tab-btn" data-tab="tab8">Petangan Pejah</button>
+</nav>
+
+<div id="tab1" class="tab-content active">
+  <div class="btn-row"><span class="eyebrow">Current date, refreshed every minute</span><button class="ghost" onclick="renderRealtime()">Refresh</button></div>
+  <div id="realtime-container"></div>
+</div>
+
+<div id="tab2" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Gregorian → Javanese</h2><span>Date conversion</span></div>
+    <div class="form-row">
+      <div class="field"><label for="masehi-input">Gregorian date</label><input type="date" id="masehi-input"></div>
+      <button class="primary" onclick="konversiMasehiKeJawa()">Convert</button>
+    </div>
+    <div id="masehi-result" class="result"><div class="placeholder">Select a date and press Convert.</div></div>
+  </div>
+</div>
+
+<div id="tab3" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Javanese → Gregorian</h2><span>Date conversion</span></div>
+    <div class="form-row">
+      <div class="field"><label for="jawa-tahun">Javanese year (AJ)</label><input type="number" id="jawa-tahun" value="1960"></div>
+      <div class="field"><label for="jawa-bulan">Month</label><select id="jawa-bulan"></select></div>
+      <div class="field"><label for="jawa-tanggal">Day (1–30)</label><input type="number" id="jawa-tanggal" value="1" min="1" max="30"></div>
+      <button class="primary" onclick="konversiJawaKeMasehi()">Convert</button>
+    </div>
+    <div id="jawa-result" class="result"><div class="placeholder">Enter a Javanese date and press Convert.</div></div>
+  </div>
+</div>
+
+<div id="tab4" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Months without Anggara Kasih</h2><span>Suwung months</span></div>
+    <div class="form-row">
+      <div class="field"><label for="suwung-tahun">Javanese year (AJ)</label><input type="number" id="suwung-tahun" value="1960"></div>
+      <button class="primary" onclick="cariBulanSuwung()">Search</button>
+    </div>
+    <div id="suwung-result" class="result"><div class="placeholder">Enter a year and press Search.</div></div>
+  </div>
+</div>
+
+<div id="tab5" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Monthly Calendar</h2><span>Dual-calendar month grid</span></div>
+    <div class="seg" id="cal-mode" role="tablist" aria-label="Calendar system">
+      <button class="on" data-mode="jawa" onclick="setCalMode('jawa')">Anno Javanico</button>
+      <button data-mode="masehi" onclick="setCalMode('masehi')">Gregorian</button>
+    </div>
+    <div class="form-row">
+      <div class="field"><label for="cal-tahun" id="cal-tahun-label">Javanese year (AJ)</label><input type="number" id="cal-tahun" value="1960"></div>
+      <div class="field"><label for="cal-bulan">Month</label><select id="cal-bulan"></select></div>
+      <button class="primary" onclick="tampilkanKalender()">Display</button>
+    </div>
+    <div id="calendar-container"></div>
+  </div>
+</div>
+
+<div id="tab6" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Pranata Mangsa</h2><span>Javanese agricultural calendar</span></div>
+    <div class="form-row">
+      <div class="field"><label for="pm-year">Agricultural year (starts 22 Jun)</label><input type="number" id="pm-year"></div>
+      <div class="field"><label for="pm-date">Date lookup (Gregorian)</label><input type="date" id="pm-date"></div>
+      <button class="primary" onclick="renderPranata()">Display</button>
+    </div>
+    <div id="pm-result" class="result"></div>
+  </div>
+</div>
+
+<div id="sheet" class="sheet" hidden>
+  <div class="sheet-bg" onclick="closeDetail()"></div>
+  <div class="sheet-card" role="dialog" aria-modal="true" aria-label="Date details">
+    <div class="sheet-bar"><span class="grab"></span>
+      <button class="icon-btn" onclick="stepDetail(-1)" aria-label="Previous day">‹</button>
+      <span class="eyebrow">Date details</span>
+      <button class="icon-btn" onclick="stepDetail(1)" aria-label="Next day">›</button>
+      <button class="icon-btn" onclick="closeDetail()" aria-label="Close">✕</button>
+    </div>
+    <div id="sheet-body"></div>
+  </div>
+</div>
+
+<div id="tab7" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Palakrama</h2><span>Hari baik pernikahan · primbon</span></div>
+    <div class="pk-grid">
+      <div class="pk-box"><h4>Laki-laki</h4><div class="form-row">
+        <div class="field"><label for="pkLH">Hari</label><select id="pkLH"></select></div>
+        <div class="field"><label for="pkLP">Pasaran</label><select id="pkLP"></select></div></div></div>
+      <div class="pk-box"><h4>Perempuan</h4><div class="form-row">
+        <div class="field"><label for="pkPH">Hari</label><select id="pkPH"></select></div>
+        <div class="field"><label for="pkPP">Pasaran</label><select id="pkPP"></select></div></div></div>
+    </div>
+    <div class="form-row" style="margin-top:14px">
+      <div class="field"><label for="pkTahun">Tahun Jawa (AJ)</label><input type="number" id="pkTahun" value="1960"></div>
+      <button class="primary" id="pkHitung">Hitung</button>
+    </div>
+    <div id="pkOut" class="result"><div class="placeholder">Pilih hari dan pasaran, lalu tekan Hitung.</div></div>
+  </div>
+</div>
+
+<div id="tab8" class="tab-content">
+  <div class="panel">
+    <div class="panel-title"><h2>Petangan Pejah</h2><span>Selamatan kematian</span></div>
+    <div class="form-row">
+      <div class="field"><label for="pjTgl">Tanggal wafat (Masehi)</label><input type="date" id="pjTgl"></div>
+      <div class="field"><label for="pjMaghrib">&nbsp;</label><label style="display:flex;gap:8px;align-items:center;text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--text)"><input type="checkbox" id="pjMaghrib"> Wafat setelah Maghrib</label></div>
+      <button class="primary" id="pjHitung">Hitung</button>
+    </div>
+    <div id="pjOut" class="result"><div class="placeholder">Isi tanggal wafat lalu tekan Hitung.</div></div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title"><h2>Metode Sar</h2><span>Modulo tradisional · hari &amp; pasaran maju</span></div>
+    <div id="pjSar" class="result"><div class="placeholder">Hasil muncul setelah Hitung.</div></div>
+  </div>
+</div>
+
+<div class="footer">Sources: Primbon Aji Saka and Almanak Pawukon 1000 Tahun. All calculations run in your browser.</div>
+</div>
+
+<script>
+
+        // ============================================================
+        //  KONSTANTA – SAMA DENGAN PYTHON
+        // ============================================================
+
+        const DAYS = ['Ahad', 'Senèn', 'Selasa', 'Rebo', 'Kemis', 'Jum\'at', 'Sabtu'];
+        const PASARAN = ['Legi', 'Paing', 'Pon', 'Wagé', 'Kliwon'];
+        const PARINGKELAN = ['Tunglé', 'Arjang', 'Wurukung', 'Paningron', 'Uwas', 'Mawulu'];
+
+        const YEAR_NAMES = ['Alip', 'Ehé', 'Djimawal', 'Djé', 'Dal', 'Bé', 'Wawu', 'Djimächir'];
+        const YEAR_LENGTHS = [354, 355, 354, 354, 355, 354, 354, 355];
+
+        const YEAR_STATUS = {
+            'Alip': 'wastu',
+            'Ehé': 'wuntu',
+            'Djimawal': 'wastu',
+            'Djé': 'wastu',
+            'Dal': 'wuntu',
+            'Bé': 'wastu',
+            'Wawu': 'wastu',
+            'Djimächir': 'wuntu'
+        };
+        const YEAR_LENGTH_BY_STATUS = {
+            'wastu': 354,
+            'wuntu': 355
+        };
+
+        const MONTHS_JAWA = ['Sura', 'Sapar', 'Mulud', 'Bakda Mulud', 'Jumadilawal', 'Jumadilakhir',
+            'Rejeb', 'Ruwah', 'Pasa', 'Sawal', 'Sela', 'Besar'
+        ];
+        const MONTHS_ARAB = ['Muharam', 'Shafar', 'Rabiulawal', 'Rabiulakhir', 'Djumadilawal',
+            'Djumadilakhir', 'Radjab', 'Sja\'ban', 'Ramadhan', 'Sjawal',
+            'Zulkaédah', 'Zulhidjdjah'
+        ];
+
+        const MONTH_LEN_WASTU = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+        const MONTH_LEN_WUNTU = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 30];
+
+        const WUKU = ['Sinta', 'Landep', 'Wukir', 'Kurantil', 'Tolu', 'Gumbreg', 'Warigalit', 'Warigagung',
+            'Djulungwangi', 'Sungsang', 'Galungan', 'Kuningan', 'Langkir', 'Mandasija',
+            'Djulungpudjud', 'Pahang', 'Kuruwelut', 'Marakèh', 'Tambir', 'Medangkungan',
+            'Maktal', 'Wujé', 'Manahil', 'Prangbakat', 'Bala', 'Wugu', 'Wajang', 'Kulawu',
+            'Dukut', 'Watugunung'
+        ];
+
+        const MASA_WUKU = ['I Kasa', 'II Karo', 'III Katelu', 'IV Kapat', 'V Kalima', 'VI Kanem',
+            'VII Kapitu', 'VIII Kawolu', 'IX Kasanga', 'X Kasapuluh', 'XI Desta', 'XII Saddha'
+        ];
+
+        const ANGGARA_KASIH_WUKU_MAP = {
+            'I Kasa': 'Mandasija',
+            'II Karo': 'Tambir',
+            'III Katelu': 'Prangbakat',
+            'IV Kapat': 'Dukut',
+            'V Kalima': 'Kurantil',
+            'VI Kanem': 'Djulungwangi',
+            'VII Kapitu': 'Mandasija',
+            'VIII Kawolu': 'Tambir',
+            'IX Kasanga': 'Prangbakat',
+            'X Kasapuluh': 'Dukut',
+            'XI Desta': 'Kurantil',
+            'XII Saddha': 'Djulungwangi'
+        };
+
+        const MACRO_WINDUS = ['Adi', 'Kuntara', 'Sangara', 'Sentjaja'];
+
+        const CHURUF_DATA = [
+            [1555, 1674, "Djam'ijah Legi", 1],
+            [1675, 1748, "Kamsijah Kliwon", 2],
+            [1749, 1866, "Arba'ijah Wagé", 3],
+            [1867, 1986, "Salasijah Pon", 4],
+            [1987, 2106, "Isnainijah Paing", 5],
+            [2107, 2226, "Ahadijah Legi", 6],
+            [2227, 2346, "Sabtijah Kliwon", 7],
+            [2347, 2466, "Djam'ijah Wagé", 8],
+            [2467, 2586, "Kamsijah Pon", 9]
+        ];
+
+        const SESEBUTAN_MATRIX = [
+            ['Sukra Mangkara', 'Anggara Rekata', 'Ditê Kenaba', 'Respati Mintuna', 'Soma Wretjita', 'Tumpak Mênda',
+                'Buddha Maêsa', 'Ditê Kenaba'
+            ],
+            ['Respati Mintuna', 'Soma Wretjita', 'Tumpak Mênda', 'Buddha Maêsa', 'Ditê Kenaba', 'Sukra Mangkara',
+                'Anggara Rekata', 'Tumpak Mênda'
+            ],
+            ['Buddha Maêsa', 'Ditê Kenaba', 'Sukra Mangkara', 'Anggara Rekata', 'Tumpak Mênda', 'Respati Mintuna',
+                'Soma Wretjita', 'Sukra Mangkara'
+            ],
+            ['Anggara Rekata', 'Tumpak Mênda', 'Respati Mintuna', 'Soma Wretjita', 'Sukra Mangkara', 'Buddha Maêsa',
+                'Ditê Kenaba', 'Respati Mintuna'
+            ],
+            ['Soma Wretjita', 'Sukra Mangkara', 'Buddha Maêsa', 'Ditê Kenaba', 'Respati Mintuna', 'Anggara Rekata',
+                'Tumpak Mênda', 'Sukra Mangkara'
+            ],
+            ['Ditê Kenaba', 'Respati Mintuna', 'Anggara Rekata', 'Tumpak Mênda', 'Buddha Maêsa', 'Soma Wretjita',
+                'Sukra Mangkara', 'Anggara Rekata'
+            ],
+            ['Tumpak Mênda', 'Buddha Maêsa', 'Soma Wretjita', 'Sukra Mangkara', 'Anggara Rekata', 'Ditê Kenaba',
+                'Respati Mintuna', 'Soma Wretjita'
+            ],
+            ['Sukra Mangkara', 'Anggara Rekata', 'Ditê Kenaba', 'Respati Mintuna', 'Soma Wretjita', 'Tumpak Mênda',
+                'Buddha Maêsa', 'Ditê Kenaba'
+            ],
+            ['Respati Mintuna', 'Soma Wretjita', 'Tumpak Mênda', 'Buddha Maêsa', 'Ditê Kenaba', 'Sukra Mangkara',
+                'Anggara Rekata', 'Tumpak Mênda'
+            ]
+        ];
+
+        const LAMBANG_WUKU_MAP = {
+            'Adi': 'Langkir',
+            'Kuntara': 'Kulawu',
+            'Sangara': 'Langkir',
+            'Sentjaja': 'Kulawu'
+        };
+        const SHORTENED_YEARS = [1674, 1748, 1866, 1986, 2106, 2226, 2346, 2466];
+
+        const EPOCH_UTC = Date.UTC(1633, 6, 8);
+
+        // ============================================================
+        //  FUNGSI BANTU
+        // ============================================================
+
+        function dateToDays(d) {
+            let utc = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+            return Math.floor((utc - EPOCH_UTC) / 86400000);
+        }
+
+        function daysToDate(days) {
+            return new Date(EPOCH_UTC + days * 86400000);
+        }
+
+        function getChuruf(year) {
+            for (let [s, e, n, k] of CHURUF_DATA) {
+                if (s <= year && year <= e) return [n, k];
+            }
+            return [null, null];
+        }
+
+        function getMonthLengthsForYear(year) {
+            let idx = (year - 1555) % 8;
+            let isWuntu = YEAR_LENGTHS[idx] === 355;
+            let lens = isWuntu ? [...MONTH_LEN_WUNTU] : [...MONTH_LEN_WASTU];
+            if (SHORTENED_YEARS.includes(year)) lens[11] -= 1;
+            return lens;
+        }
+
+        function getBulanTanpaAnggaraKasih(year) {
+            let lens = getMonthLengthsForYear(year);
+            let temp = 1555,
+                cum = 0;
+            while (temp < year) {
+                let idx = (temp - 1555) % 8;
+                let len = YEAR_LENGTHS[idx];
+                if (SHORTENED_YEARS.includes(temp)) len -= 1;
+                cum += len;
+                temp++;
+            }
+            let start = cum,
+                suwung = [];
+            for (let i = 0; i < 12; i++) {
+                let found = false;
+                for (let d = 0; d < lens[i]; d++) {
+                    let day = (5 + start + d) % 7;
+                    let pas = (start + d) % 5;
+                    if (day === 2 && pas === 4) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) suwung.push(MONTHS_JAWA[i]);
+                start += lens[i];
+            }
+            return suwung;
+        }
+
+        // ============================================================
+        //  KONVERSI JAWA → MASEHI (UNTUK FUNGSI LAIN)
+        // ============================================================
+
+        function fromJavanese(year, monthName, day) {
+            let m = monthName.toLowerCase().trim();
+            let map = {};
+            MONTHS_JAWA.forEach((n, i) => map[n.toLowerCase()] = i);
+            if (!(m in map)) return null;
+            let mi = map[m];
+
+            let temp = 1555,
+                cum = 0;
+            while (temp < year) {
+                let idx = (temp - 1555) % 8;
+                let len = YEAR_LENGTHS[idx];
+                if (SHORTENED_YEARS.includes(temp)) len -= 1;
+                cum += len;
+                temp++;
+            }
+            let idx2 = (year - 1555) % 8;
+            let isW = YEAR_LENGTHS[idx2] === 355;
+            let mlen = isW ? [...MONTH_LEN_WUNTU] : [...MONTH_LEN_WASTU];
+            if (SHORTENED_YEARS.includes(year)) mlen[11] -= 1;
+            if (day < 1 || day > mlen[mi]) return null;
+            let off = 0;
+            for (let i = 0; i < mi; i++) off += mlen[i];
+            off += day - 1;
+            return daysToDate(cum + off);
+        }
+
+        // ============================================================
+        //  KELAS KALENDER – SALAPAN DIHITUNG LANGSUNG (SAMA DENGAN PYTHON)
+        // ============================================================
+
+        class JavaneseCalendarJS {
+            constructor(gregDate) {
+                this.gregDate = new Date(gregDate);
+                this.days = dateToDays(this.gregDate);
+
+                // ---- TAHUN ----
+                let y = 1555,
+                    cum = 0;
+                while (true) {
+                    let idx = (y - 1555) % 8;
+                    let len = YEAR_LENGTHS[idx];
+                    if (SHORTENED_YEARS.includes(y)) len -= 1;
+                    if (cum + len > this.days) break;
+                    cum += len;
+                    y++;
+                }
+                this.year = y;
+                this.cumTo1Sura = cum;
+                this.rem = this.days - cum;
+                this.yi = (y - 1555) % 8;
+                this.yn = YEAR_NAMES[this.yi];
+
+                let status = YEAR_STATUS[this.yn] || 'unknown';
+                this.yearStatus = status;
+                this.yearLength = YEAR_LENGTH_BY_STATUS[status] || 0;
+
+                // ---- BULAN ----
+                let isW = YEAR_LENGTHS[this.yi] === 355;
+                let mlen = isW ? [...MONTH_LEN_WUNTU] : [...MONTH_LEN_WASTU];
+                if (SHORTENED_YEARS.includes(y)) mlen[11] -= 1;
+                let mi = 0,
+                    r = this.rem;
+                for (let i = 0; i < 12; i++) {
+                    if (r >= mlen[i]) {
+                        r -= mlen[i];
+                        mi++;
+                    } else break;
+                }
+                this.mi = mi;
+                this.monthJawa = MONTHS_JAWA[mi];
+                this.monthArab = MONTHS_ARAB[mi];
+                this.day = r + 1;
+
+                // ---- DINA ----
+                this.di = (5 + this.days) % 7;
+                this.dn = DAYS[this.di];
+                this.pi = this.days % 5;
+                this.pn = PASARAN[this.pi];
+                this.pri = (this.days + 2) % 6;
+                this.prn = PARINGKELAN[this.pri];
+
+                // ---- WUKU ----
+                this.wi = Math.floor((this.days + 194) / 7) % 30;
+                this.wn = this.wi + 1;
+                this.wName = WUKU[this.wi];
+
+                // ---- MASA-WUKU ----
+                this.mwi = Math.floor((this.days + 311) / 35) % 12;
+                this.mwName = MASA_WUKU[this.mwi];
+                this.anggaraKasihWuku = ANGGARA_KASIH_WUKU_MAP[this.mwName] || '—';
+
+                // ---- WINDU BESAR ----
+                this.maWi = Math.floor((this.year - 1555 + 7) / 8) % 4;
+                this.maWName = MACRO_WINDUS[this.maWi];
+                this.maWNum = this.maWi + 1;
+
+                // ---- LAMBANG ----
+                this.lambang = LAMBANG_WUKU_MAP[this.maWName] || '—';
+
+                // ---- CHURUF ----
+                let [chName, chNum] = getChuruf(this.year);
+                this.churuf = chName;
+                this.kurup = chNum;
+
+                // ---- SESEBUTAN ----
+                this.sesebutan = this.kurup ? SESEBUTAN_MATRIX[this.kurup - 1][this.yi] : null;
+
+                // ---- 1 SURA ----
+                let fd = (5 + this.cumTo1Sura) % 7;
+                let fp = this.cumTo1Sura % 5;
+                this.firstDaySura = DAYS[fd];
+                this.firstPasSura = PASARAN[fp];
+                this.sesebutanKeterangan =
+                    `1 Sura tahun ${this.year} ${this.yn} (${this.firstDaySura} ${this.firstPasSura}).`;
+
+                // ============================================================
+                //  SALAPAN – DIHITUNG LANGSUNG, TANPA fromJavanese
+                //  SAMA PERSIS DENGAN LOGIKA PYTHON
+                // ============================================================
+
+                // 1. Cari awal Windu (tahun Alip yang memulai siklus 8 tahun)
+                let winduStartYear = 1555 + Math.floor((this.year - 1555) / 8) * 8;
+
+                // 2. Hitung temp_cum = total hari dari epoch ke 1 Sura winduStartYear
+                let tempYear = 1555;
+                let tempCum = 0;
+                while (tempYear < winduStartYear) {
+                    let idx = (tempYear - 1555) % 8;
+                    let len = YEAR_LENGTHS[idx];
+                    if (SHORTENED_YEARS.includes(tempYear)) len -= 1;
+                    tempCum += len;
+                    tempYear++;
+                }
+
+                // 3. Total hari dari epoch ke tanggal sekarang
+                let totalDays = this.days; // perbaikan: langsung pakai this.days (sama seperti Python)
+
+                // 4. Hari yang sudah dilalui dalam Windu
+                let daysSinceWinduStart = totalDays - tempCum;
+
+                // 5. Total hari dalam Windu (dinamis)
+                let winduEndYear = winduStartYear + 7;
+                let winduDays = 0;
+                for (let yy = winduStartYear; yy <= winduEndYear; yy++) {
+                    let idx = (yy - 1555) % 8;
+                    let len = YEAR_LENGTHS[idx];
+                    if (SHORTENED_YEARS.includes(yy)) len -= 1;
+                    winduDays += len;
+                }
+
+                // 6. Simpan properti
+                this.winduTotalDays = winduDays;
+                this.daysSinceWinduStart = daysSinceWinduStart;
+                this.winduProgress = (daysSinceWinduStart / winduDays) * 100;
+
+                // 7. Lapan (1 Lapan = 35 hari)
+                let lapanIdx = Math.floor(daysSinceWinduStart / 35) % 81;
+                this.lapanNum = lapanIdx + 1;
+                this.lapanTotal = 81;
+
+                let dToLapan = (35 - (daysSinceWinduStart % 35)) % 35;
+                this.lapanStart = new Date(this.gregDate);
+                this.lapanStart.setUTCDate(this.lapanStart.getUTCDate() + dToLapan);
+
+                // ---- Hari sejak Anggara Kasih terakhir ----
+                const firstAK = 4;  // Selasa Kliwon pertama dari epoch (Jumat Legi)
+                if (this.days >= firstAK) {
+                    let lastAKOffset = firstAK + 35 * Math.floor((this.days - firstAK) / 35);
+                    this.daysSinceLastAK = this.days - lastAKOffset;
+                } else {
+                    this.daysSinceLastAK = 0;
+                }
+
+                // ---- DAPUR WUKU ----
+                this.dapur = Math.floor(this.days / 210);
+
+                // ---- BULAN SUWUNG ----
+                this.suwung = getBulanTanpaAnggaraKasih(this.year);
+            }
+
+            format() {
+                let s = this.suwung.length ? this.suwung.join(', ') : 'Tidak ada';
+                let fill = Math.floor(14 * this.winduProgress / 100);
+                let bar = '█'.repeat(fill) + '░'.repeat(14 - fill);
+                let progressLine =
+                    `📌 Salapan   : ${this.lapanNum}/81 [${bar}] ${this.winduProgress.toFixed(1)}% (${Math.floor(this.daysSinceWinduStart)}/${this.winduTotalDays} hari)`;
+                return `📅 Gregorian : ${this.gregDate.toISOString().slice(0,10)}
+        🗓️ Jawa      : AJ ${this.year} ${this.yn}
+        📌 1 Sura    : ${this.sesebutanKeterangan}
+        🏷️ Sesebutan : ${this.sesebutan}
+        📌 Status    : ${this.yearStatus} (${this.yearLength} hari)
+        📆 Bulan     : ${this.monthJawa} ${this.day}
+        📌 Dina      : ${this.dn} ${this.pn} ${this.prn}
+        🌀 Wuku      : ${this.wn}. ${this.wName}
+        ⏳ Masa-Wuku : ${this.mwName}
+                       (${this.daysSinceLastAK} hari sejak Anggara Kasih wuku ${this.anggaraKasihWuku})
+        🔁 Windu     : ${this.maWNum}. ${this.maWName}
+        🔰 Kurup     : ${this.kurup}. ${this.churuf}
+        🏷️ Lambang   : ${this.lambang}
+        ${progressLine}
+        📌 Bulan tanpa Anggara Kasih : ${s}`;
+            }
+        }
+
+        // ============================================================
+        //  KALENDER BULANAN
+        // ============================================================
+
+        function generateMonthGrid(jawaYear, monthName) {
+            let m = monthName.toLowerCase().trim();
+            let map = {};
+            MONTHS_JAWA.forEach((n, i) => map[n.toLowerCase()] = i);
+            if (!(m in map)) return null;
+            let mi = map[m];
+
+            let temp = 1555,
+                cum = 0;
+            while (temp < jawaYear) {
+                let idx = (temp - 1555) % 8;
+                let len = YEAR_LENGTHS[idx];
+                if (SHORTENED_YEARS.includes(temp)) len -= 1;
+                cum += len;
+                temp++;
+            }
+            let idx2 = (jawaYear - 1555) % 8;
+            let isW = YEAR_LENGTHS[idx2] === 355;
+            let mlen = isW ? [...MONTH_LEN_WUNTU] : [...MONTH_LEN_WASTU];
+            if (SHORTENED_YEARS.includes(jawaYear)) mlen[11] -= 1;
+
+            let off = 0;
+            for (let i = 0; i < mi; i++) off += mlen[i];
+            let start = daysToDate(cum + off);
+
+            let first = start.getUTCDay();
+            let grid = [],
+                week = [];
+            for (let i = 0; i < first; i++) week.push(null);
+            let suwungList = getBulanTanpaAnggaraKasih(jawaYear);
+            for (let d = 1; d <= mlen[mi]; d++) {
+                let date = new Date(start);
+                date.setUTCDate(date.getUTCDate() + d - 1);
+                let kal = new JavaneseCalendarJS(date);
+                week.push({
+                    jawa: d,
+                    masehiDate: date,
+                    dayName: kal.dn,
+                    pasaran: kal.pn,
+                    wuku: `${kal.wn}.${kal.wName}`,
+                    isSuwung: suwungList.includes(kal.monthJawa)
+                });
+                if (week.length === 7) {
+                    grid.push(week);
+                    week = [];
+                }
+            }
+            while (week.length < 7) week.push(null);
+            if (week.some(c => c !== null)) grid.push(week);
+            return {
+                grid,
+                month: monthName,
+                year: jawaYear
+            };
+        }
+
+
+// ============================================================
+//  RENDER FUNCTIONS
+// ============================================================
+// ============================================================
+//  PRANATA MANGSA (conventional fixed solar scheme, Paku Buwana VII, 1855)
+//  Source: Ammarell; van den Bosch; Sumani. Gregorian-fixed, independent of the lunisolar Javanese date.
+// ============================================================
+const PM = [
+    [1, 'Kasa', 'Kasa', 6, 22, 41], [2, 'Karo', 'Kalih', 8, 2, 23], [3, 'Katiga', 'Katelu', 8, 25, 24],
+    [4, 'Kapat', 'Kasakawan', 9, 18, 25], [5, 'Kalima', 'Gangsal', 10, 13, 27], [6, 'Kanem', 'Kanem', 11, 9, 43],
+    [7, 'Kapitu', 'Kapitu', 12, 22, 43], [8, 'Kawolu', 'Kawolu', 2, 3, 26], [9, 'Kasanga', 'Kasanga', 3, 1, 25],
+    [10, 'Kasadasa', 'Kasepuluh', 3, 26, 24], [11, 'Desta', 'Desta', 4, 19, 23], [12, 'Sada', 'Sada', 5, 12, 41]
+];
+const PM_SEASONS = [
+    ['Katiga', 'Dry season', [1, 2, 3], '#d9a441'], ['Labuh', 'Transition to rains', [4, 5, 6], '#7aa6a1'],
+    ['Rendheng', 'Rainy season', [7, 8, 9], '#4f86c6'], ['Mareng', 'Transition to dry season', [10, 11, 12], '#b58a5b']
+];
+const PM_NOTES = {
+    1: 'Orion (Weluku) rises upright in the east before dawn. Start of the agricultural year; land clearing.',
+    2: 'Kapok (randu) trees begin to leaf. Soil cracks. Dry-land cultivation.',
+    3: 'Peak of the dry season; wells run dry. Secondary crops (maize, groundnuts) harvested.',
+    4: 'Weaver birds (gelatik, manyar) in the paddies and nesting. Winds begin shifting westerly.',
+    5: 'First solar zenith passage (13 Oct). Onset of rain. Pleiades visible at dusk. "Poisonous" dew.',
+    6: 'Heavy rain. Orion rises upright at dusk (6 Dec). Rice nursery sowing.',
+    7: 'December solstice. Pleiades at about 50° (pecat sawad). Seedlings transplanted to the paddies.',
+    8: 'Transplanting complete. Pleiades culminate at dusk. Rice growing.',
+    9: 'Second solar zenith passage (1 Mar). Orion culminates. Crickets sing. Rice heads forming.',
+    10: 'Rains ease, easterly wind. Main harvest begins.',
+    11: 'Peak harvest. Orion inverted in the west. Kapok blooms. Debts settled.',
+    12: 'Harvest complete. Orion disappears (4 Jun). Fallow period (Apit Lemah).'
+};
+const PM_MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY_MS = 86400000;
+const isLeap = y => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+const pmFmt = (t, withYear) => { const d = new Date(t); return `${d.getUTCDate()} ${PM_MON[d.getUTCMonth()]}${withYear ? ' ' + d.getUTCFullYear() : ''}`; };
+// Span of mangsa m whose Gregorian start falls in calendar year y (Kawolu lasts 27 days when y is leap)
+function pmSpan(y, m) {
+    const start = Date.UTC(y, m[3] - 1, m[4]);
+    const dur = (m[0] === 8 && isLeap(y)) ? 27 : m[5];
+    return { m, start, end: start + (dur - 1) * DAY_MS, dur, year: y };
+}
+function pmFind(t) {            // equivalent to get_mangsa_by_date() in pranatamangsa.py
+    const y = new Date(t).getUTCFullYear();
+    for (const yy of [y, y - 1]) for (const m of PM) { const sp = pmSpan(yy, m); if (t >= sp.start && t <= sp.end) return sp; }
+    return null;
+}
+function pmSeason(no) { return PM_SEASONS.find(x => x[2].includes(no)); }
+// Agricultural year Y: Kasa..Kapitu start in Y (22 Jun..22 Dec), Kawolu..Sada start in Y+1 (3 Feb..12 May)
+function pmYear(Y) { return PM.map(m => pmSpan(m[0] <= 7 ? Y : Y + 1, m)); }
+function pmCell(t) {
+    const sp = pmFind(t);
+    if (!sp) return cellHTML('Pranata Mangsa', '—');
+    const se = pmSeason(sp.m[0]);
+    return cellHTML('Pranata Mangsa', `${sp.m[0]}. ${sp.m[1]}`,
+        `${se[0]} · ${se[1]}<br>Day ${Math.round((t - sp.start) / DAY_MS) + 1} of ${sp.dur} · ${pmFmt(sp.start)} – ${pmFmt(sp.end)}`);
+}
+
+const iso = d => d.toISOString().slice(0, 10);
+const esc = t => String(t).replace(/[&<>]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[c]));
+
+function cellHTML(k, v, sub, cls) {
+    return `<div class="cell ${cls || ''}"><div class="k">${k}</div><div class="v">${v}</div>${sub ? `<div class="s">${sub}</div>` : ''}</div>`;
+}
+
+function detailGrid(kal) {
+    const p = kal.winduProgress;
+    const suw = kal.suwung.length ? kal.suwung.join(', ') : 'None';
+    return `<div class="data-grid">
+        ${cellHTML('Gregorian date', `<span class="mono">${iso(kal.gregDate)}</span>`)}
+        ${cellHTML('Javanese year', `AJ ${kal.year} · ${kal.yn}`, `${kal.yearStatus} year · ${kal.yearLength} days`)}
+        ${cellHTML('Month · day', `${kal.monthJawa} ${kal.day}`)}
+        ${cellHTML('Day', `${kal.dn} ${kal.pn}`, `Paringkelan: ${kal.prn}`)}
+        ${cellHTML('Wuku', `${kal.wn}. ${kal.wName}`)}
+        ${pmCell(kal.gregDate.getTime())}
+        ${cellHTML('Masa-Wuku', kal.mwName, `${kal.daysSinceLastAK} days since Anggara Kasih (wuku ${kal.anggaraKasihWuku})`)}
+        ${cellHTML('1 Sura', kal.sesebutanKeterangan)}
+        ${cellHTML('Sesebutan', kal.sesebutan)}
+        ${cellHTML('Windu', `${kal.maWNum}. ${kal.maWName}`)}
+        ${cellHTML('Kurup', `${kal.kurup}. ${kal.churuf}`)}
+        ${cellHTML('Lambang', kal.lambang)}
+        ${cellHTML('Months without Anggara Kasih', suw)}
+        ${cellHTML('Salapan cycle', `${kal.lapanNum} / 81 <span class="mono" style="color:var(--gold)">· ${p.toFixed(1)}%</span>`,
+            `${Math.floor(kal.daysSinceWinduStart)} of ${kal.winduTotalDays} days<div class="progress"><div style="width:${p}%"></div></div>`, 'wide')}
+    </div>`;
+}
+
+function renderRealtime() {
+    const now = new Date();
+    const today = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    const kal = new JavaneseCalendarJS(today);
+    const el = document.getElementById('realtime-container');
+    el.innerHTML = `
+        <div class="hero">
+            <div class="eyebrow">Today · Anno Javanico</div>
+            <div class="day">${kal.dn} <i>${kal.pn}</i></div>
+            <div class="date"><b>${kal.day} ${kal.monthJawa}</b> · AJ ${kal.year} ${kal.yn} · Wuku ${kal.wName}</div>
+            <div class="badges">
+                <span class="badge gold">${kal.yearStatus} · ${kal.yearLength} d</span>
+                <span class="badge">Windu ${kal.maWName}</span>
+                <span class="badge gold">Mangsa ${(pmFind(today.getTime()) || {m: ['', '—']}).m[1]}</span>
+                <span class="badge">Kurup ${kal.churuf}</span>
+                <span class="badge mono">${iso(today)}</span>
+            </div>
+        </div>
+        ${detailGrid(kal)}
+        <div class="foot-note">daysSinceEpoch = ${kal.days} · epoch ${iso(new Date(EPOCH_UTC))}</div>`;
+    return kal;
+}
+
+function konversiMasehiKeJawa() {
+    const v = document.getElementById('masehi-input').value;
+    if (!v) return;
+    const p = v.split('-');
+    const kal = new JavaneseCalendarJS(new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])));
+    document.getElementById('masehi-result').innerHTML = detailGrid(kal);
+}
+
+function konversiJawaKeMasehi() {
+    const y = parseInt(document.getElementById('jawa-tahun').value);
+    const m = document.getElementById('jawa-bulan').value;
+    const d = parseInt(document.getElementById('jawa-tanggal').value);
+    const out = document.getElementById('jawa-result');
+    if (!y || !d) return;
+    const res = fromJavanese(y, m, d);
+    out.innerHTML = res ? detailGrid(new JavaneseCalendarJS(res)) : '<div class="alert">Invalid date: the day does not exist in the selected month and year.</div>';
+}
+
+function cariBulanSuwung() {
+    const y = parseInt(document.getElementById('suwung-tahun').value);
+    if (!y) return;
+    const s = getBulanTanpaAnggaraKasih(y);
+    document.getElementById('suwung-result').innerHTML = s.length
+        ? `<div class="alert">AJ ${y}: ${s.length} month(s) without Anggara Kasih.</div><div class="pill-list">${s.map(x => `<span class="badge warn">${esc(x)}</span>`).join('')}</div>`
+        : `<div class="alert ok">AJ ${y}: every month contains an Anggara Kasih.</div>`;
+}
+
+function renderPranata() {
+    const Y = parseInt(document.getElementById('pm-year').value);
+    const ds = document.getElementById('pm-date').value;
+    const out = document.getElementById('pm-result');
+    if (!Y) return;
+    let t;
+    if (ds) { const q = ds.split('-'); t = Date.UTC(+q[0], +q[1] - 1, +q[2]); }
+    else { const n = new Date(); t = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+    const cur = pmFind(t), spans = pmYear(Y);
+    const t0 = spans[0].start, t1 = spans[11].end, total = (t1 - t0) / DAY_MS + 1;
+    let html = '';
+    if (cur) {
+        const se = pmSeason(cur.m[0]);
+        html += `<div class="hero" style="margin-bottom:0"><div class="eyebrow">${pmFmt(t, true)} · Pranata Mangsa</div>
+            <div class="day">Mangsa <i>${cur.m[1]}</i></div>
+            <div class="date"><b>No. ${cur.m[0]}</b> · also ${cur.m[2]} · ${se[0]} (${se[1]})</div>
+            <div class="badges"><span class="badge gold">Day ${Math.round((t - cur.start) / DAY_MS) + 1} of ${cur.dur}</span>
+            <span class="badge mono">${pmFmt(cur.start, true)} – ${pmFmt(cur.end, true)}</span></div></div>`;
+    }
+    html += `<div class="pm-bar">${spans.map(sp => `<span title="${sp.m[1]}" style="flex:${sp.dur};background:${pmSeason(sp.m[0])[3]}"></span>`).join('')}
+        ${(t >= t0 && t <= t1) ? `<div class="pm-marker" style="left:${((t - t0) / DAY_MS + .5) / total * 100}%"></div>` : ''}</div>
+        <div class="pm-axis"><span>${pmFmt(t0, true)}</span><span>${total} days</span><span>${pmFmt(t1, true)}</span></div>`;
+    for (const [name, desc, list, col] of PM_SEASONS) {
+        html += `<div class="season-head"><i style="background:${col}"></i><h4>${name}</h4><span>${desc}</span></div><div class="data-grid">`;
+        for (const sp of spans.filter(x => list.includes(x.m[0]))) {
+            const on = t >= sp.start && t <= sp.end;
+            html += cellHTML(`Mangsa ${sp.m[0]}${on ? ' · current' : ''}`,
+                `${sp.m[1]}${sp.m[2] !== sp.m[1] ? ` <span style="color:var(--muted);font-weight:400">/ ${sp.m[2]}</span>` : ''}`,
+                `<span class="mono">${pmFmt(sp.start, true)} – ${pmFmt(sp.end, true)}</span> · ${sp.dur} days<div class="note">${PM_NOTES[sp.m[0]]}</div>`,
+                on ? 'active' : '');
+        }
+        html += '</div>';
+    }
+    html += '<div class="foot-note">Conventional fixed solar scheme (Paku Buwana VII, 1855), 365 days (Kawolu 27 days in leap years). Astronomical and phenological notes follow the cited sources (Ammarell; van den Bosch; Sumani) and are not independently verified here.</div>';
+    out.innerHTML = html;
+}
+
+let calMode = 'jawa', calAnchor = null, detailT = null;
+const GM = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const JV_SHORT = ['Sur', 'Sap', 'Mul', 'B.Mul', 'J.Awl', 'J.Akh', 'Rej', 'Ruw', 'Pas', 'Saw', 'Sel', 'Bes'];
+const subG = d => `<b>${d.getUTCDate()}</b> <em><span class="s">${PM_MON[d.getUTCMonth()]}</span><span class="f">${GM[d.getUTCMonth()]}</span></em>`;
+const subJ = k => { const i = MONTHS_JAWA.indexOf(k.monthJawa); return `<b>${k.day}</b> <em><span class="s">${JV_SHORT[i]}</span><span class="f">${k.monthJawa}</span></em>`; };
+const pad2 = n => String(n).padStart(2, '0');
+
+function fillCalMonths() {
+    const sel = document.getElementById('cal-bulan');
+    sel.innerHTML = '';
+    (calMode === 'jawa' ? MONTHS_JAWA : GM).forEach(m => sel.add(new Option(m, m)));
+}
+
+function setCalMode(mode) {
+    if (mode === calMode) return;
+    const anchor = calAnchor;           // first day of the month currently displayed (UTC ms)
+    calMode = mode;
+    document.querySelectorAll('#cal-mode button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+    document.getElementById('cal-tahun-label').textContent = mode === 'jawa' ? 'Javanese year (AJ)' : 'Gregorian year';
+    fillCalMonths();
+    const yr = document.getElementById('cal-tahun'), sel = document.getElementById('cal-bulan');
+    if (anchor !== null) {
+        if (mode === 'masehi') { const d = new Date(anchor); yr.value = d.getUTCFullYear(); sel.selectedIndex = d.getUTCMonth(); }
+        else { const k = new JavaneseCalendarJS(new Date(anchor)); yr.value = k.year; sel.value = k.monthJawa; }
+    }
+    tampilkanKalender();
+}
+
+function shiftMonth(delta) {
+    const sel = document.getElementById('cal-bulan'), yr = document.getElementById('cal-tahun');
+    let i = sel.selectedIndex + delta, y = parseInt(yr.value) || 0;
+    if (i < 0) { i = 11; y--; } else if (i > 11) { i = 0; y++; }
+    sel.selectedIndex = i; yr.value = y;
+    tampilkanKalender();
+}
+
+// Build unified weeks of cells {t, main, sub, pasaran, wuku, sun, suwung, newMonth} for either system
+function buildMonth(y, m) {
+    const weeks = []; let week = [];
+    const push = c => { week.push(c); if (week.length === 7) { weeks.push(week); week = []; } };
+    const fin = () => { while (week.length && week.length < 7) week.push(null); if (week.length) weeks.push(week); };
+    let t0, t1, title, sub;
+    if (calMode === 'jawa') {
+        const data = generateMonthGrid(y, m);
+        if (!data) return null;
+        const flat = data.grid.flat().filter(Boolean);
+        for (const c of data.grid.flat()) {
+            if (!c) { push(null); continue; }
+            const d = c.masehiDate;
+            push({ t: d.getTime(), main: c.jawa, sub: subG(d),
+                pasaran: c.pasaran, wuku: c.wuku, sun: c.dayName === 'Ahad', suwung: c.isSuwung, newMonth: d.getUTCDate() === 1 });
+        }
+        t0 = flat[0].masehiDate.getTime(); t1 = flat[flat.length - 1].masehiDate.getTime();
+        const a = new Date(t0), b = new Date(t1);
+        const span = a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear() ? `${PM_MON[a.getUTCMonth()]} ${a.getUTCFullYear()}`
+            : a.getUTCFullYear() === b.getUTCFullYear() ? `${PM_MON[a.getUTCMonth()]} – ${PM_MON[b.getUTCMonth()]} ${a.getUTCFullYear()}`
+            : `${PM_MON[a.getUTCMonth()]} ${a.getUTCFullYear()} – ${PM_MON[b.getUTCMonth()]} ${b.getUTCFullYear()}`;
+        title = `${m} ${y}`; sub = `Anno Javanico · Gregorian ${span}`;
+        return { weeks, title, sub, anchor: t0, suwung: flat.some(c => c.isSuwung) ? [m] : [] };
+    }
+    const mi = GM.indexOf(m);
+    if (mi < 0) return null;
+    const first = Date.UTC(y, mi, 1), n = new Date(Date.UTC(y, mi + 1, 0)).getUTCDate();
+    for (let i = 0; i < new Date(first).getUTCDay(); i++) push(null);
+    let kFirst, kLast;
+    for (let d = 1; d <= n; d++) {
+        const t = Date.UTC(y, mi, d), k = new JavaneseCalendarJS(new Date(t));
+        if (d === 1) kFirst = k; if (d === n) kLast = k;
+        push({ t, main: d, sub: subJ(k), pasaran: k.pn, wuku: `${k.wn}.${k.wName}`,
+            sun: k.dn === 'Ahad', suwung: k.suwung.includes(k.monthJawa), jm: k.monthJawa, newMonth: k.day === 1 });
+    }
+    fin();
+    const sw = [...new Set(weeks.flat().filter(c => c && c.suwung).map(c => c.jm))];
+    title = `${m} ${y}`;
+    sub = kFirst.monthJawa === kLast.monthJawa && kFirst.year === kLast.year ? `Gregorian · AJ ${kFirst.year} ${kFirst.monthJawa}`
+        : `Gregorian · AJ ${kFirst.year} ${kFirst.monthJawa} – ${kLast.year !== kFirst.year ? 'AJ ' + kLast.year + ' ' : ''}${kLast.monthJawa}`;
+    return { weeks, title, sub, anchor: first, suwung: sw };
+}
+
+function tampilkanKalender() {
+    const y = parseInt(document.getElementById('cal-tahun').value);
+    const m = document.getElementById('cal-bulan').value;
+    const container = document.getElementById('calendar-container');
+    if (!y) return;
+    const data = buildMonth(y, m);
+    if (!data) { container.innerHTML = '<div class="alert">Month not found.</div>'; return; }
+    calAnchor = data.anchor;
+    const n = new Date(), today = Date.UTC(n.getFullYear(), n.getMonth(), n.getDate());
+    const g = calMode === 'masehi';
+    let html = `
+        <div class="cal-head">
+            <button class="icon-btn" onclick="shiftMonth(-1)" aria-label="Previous month">‹</button>
+            <h3>${data.title}<small>${data.sub}</small></h3>
+            <button class="icon-btn" onclick="shiftMonth(1)" aria-label="Next month">›</button>
+        </div>
+        ${data.suwung.length ? `<div class="suwung-note"><span class="badge warn">No Anggara Kasih (Selasa Kliwon) in ${data.suwung.join(', ')}</span></div>` : ''}
+        <div class="legend">
+            <span><i style="background:var(--red)"></i>Sunday (Ahad)</span>
+            <span><i style="background:var(--red-soft);border:1px solid var(--red)"></i>Month without Anggara Kasih</span>
+            <span><i style="border:2px solid var(--gold)"></i>Today</span>
+            <span><i style="background:var(--gold)"></i>${g ? '1st of a Javanese month' : '1st of a Gregorian month'}</span>
+        </div>
+        <div class="tap-hint">${g ? 'Large number: Gregorian · small: Javanese date' : 'Large number: Javanese date · small: Gregorian'} — tap a date for details</div>
+        <div class="table-responsive"><table class="calendar">
+        <tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>`;
+    for (const week of data.weeks) {
+        html += '<tr>';
+        for (const c of week) {
+            if (!c) { html += '<td class="empty-cell"></td>'; continue; }
+            const cls = ['tap', c.sun && 'minggu', c.suwung && 'suwung', c.t === today && 'today', c.newMonth && 'newmonth', c.showM && 'showm'].filter(Boolean).join(' ');
+            html += `<td class="${cls}" data-t="${c.t}" tabindex="0" role="button"><div class="jawa-date">${c.main}</div><div class="pasaran">${c.pasaran}</div><div class="masehi-date">${c.sub}</div><div class="wuku">${c.wuku}</div></td>`;
+        }
+        html += '</tr>';
+    }
+    container.innerHTML = html + '</table></div>';
+}
+
+// ---- Tap-to-see-details sheet
+function openDetail(t) {
+    detailT = t;
+    const kal = new JavaneseCalendarJS(new Date(t));
+    document.getElementById('sheet-body').innerHTML = `
+        <div class="hero"><div class="eyebrow">${GM[new Date(t).getUTCMonth()]} ${new Date(t).getUTCDate()}, ${new Date(t).getUTCFullYear()}</div>
+            <div class="day">${kal.dn} <i>${kal.pn}</i></div>
+            <div class="date"><b>${kal.day} ${kal.monthJawa}</b> · AJ ${kal.year} ${kal.yn} · Wuku ${kal.wName}</div></div>
+        ${detailGrid(kal)}`;
+    const sh = document.getElementById('sheet');
+    sh.hidden = false;
+    document.body.style.overflow = 'hidden';
+    sh.querySelector('.sheet-card').scrollTop = 0;
+}
+function closeDetail() { document.getElementById('sheet').hidden = true; document.body.style.overflow = ''; detailT = null; }
+function stepDetail(d) { if (detailT !== null) openDetail(detailT + d * DAY_MS); }
+
+// ============================================================
+//  INIT
+// ============================================================
+function populateSelects() {
+    for (const id of ['jawa-bulan', 'cal-bulan']) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = '';
+        MONTHS_JAWA.forEach(m => sel.add(new Option(m, m)));
+    }
+}
+
+function initTabs() {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(this.dataset.tab).classList.add('active');
+            this.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        });
+    });
+}
+
+function initTheme() {
+    const root = document.documentElement;
+    document.getElementById('theme').addEventListener('click', () => {
+        const dark = root.dataset.theme ? root.dataset.theme === 'dark' : !matchMedia('(prefers-color-scheme: light)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+    });
+}
+
+function tickClock() {
+    const n = new Date(), p = x => String(x).padStart(2, '0');
+    document.getElementById('clock').textContent = `${n.getFullYear()}-${p(n.getMonth() + 1)}-${p(n.getDate())}  ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+}
+
+function init() {
+    populateSelects();
+    initTabs();
+    initTheme();
+    const cc = document.getElementById('calendar-container');
+    cc.addEventListener('click', e => { const td = e.target.closest('td[data-t]'); if (td) openDetail(+td.dataset.t); });
+    cc.addEventListener('keydown', e => { const td = e.target.closest('td[data-t]'); if (td && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openDetail(+td.dataset.t); } });
+    document.addEventListener('keydown', e => {
+        if (document.getElementById('sheet').hidden) return;
+        if (e.key === 'Escape') closeDetail(); else if (e.key === 'ArrowLeft') stepDetail(-1); else if (e.key === 'ArrowRight') stepDetail(1);
+    });
+    const kal = renderRealtime();
+    // Default all inputs to the current Javanese date
+    for (const id of ['jawa-tahun', 'suwung-tahun', 'cal-tahun']) document.getElementById(id).value = kal.year;
+    document.getElementById('jawa-bulan').value = kal.monthJawa;
+    document.getElementById('cal-bulan').value = kal.monthJawa;
+    document.getElementById('jawa-tanggal').value = kal.day;
+    document.getElementById('masehi-input').value = iso(kal.gregDate);
+    tickClock();
+    setInterval(tickClock, 1000);
+    setInterval(renderRealtime, 60000);
+    const pmNow = pmFind(kal.gregDate.getTime());
+    document.getElementById('pm-year').value = pmNow ? (pmNow.m[0] >= 8 ? pmNow.year - 1 : pmNow.year) : kal.gregDate.getUTCFullYear();
+    document.getElementById('pm-date').value = iso(kal.gregDate);
+    renderPranata();
+    tampilkanKalender();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ============================================================
+//  PALAKRAMA (tab7) — data & aturan dari palakrama.html, tanpa filter wuku/tanggal
+// ============================================================
+(function () {
+        const hari = {
+            "Minggu": 5,
+            "Senin": 4,
+            "Selasa": 3,
+            "Rabu": 7,
+            "Kamis": 8,
+            "Jum'at": 6,
+            "Sabtu": 9
+        };
+
+        const pasaran = {
+            "Kliwon": 8,
+            "Legi": 5,
+            "Pahing": 9,
+            "Pon": 7,
+            "Wage": 4
+        };
+
+        const dataKelompok = {
+            0: [
+                ["Minggu", "Pon", 12],
+                ["Minggu", "Wage", 9],
+                ["Senin", "Kliwon", 12],
+                ["Senin", "Legi", 9],
+                ["Selasa", "Pahing", 12],
+                ["Rabu", "Kliwon", 15],
+                ["Rabu", "Legi", 12],
+                ["Kamis", "Pon", 15],
+                ["Kamis", "Wage", 12],
+                ["Jum'at", "Pahing", 15],
+                ["Sabtu", "Pahing", 18]
+            ],
+            1: [
+                ["Minggu", "Kliwon", 13],
+                ["Minggu", "Legi", 10],
+                ["Senin", "Pahing", 13],
+                ["Selasa", "Pon", 10],
+                ["Selasa", "Wage", 7],
+                ["Rabu", "Pahing", 16],
+                ["Kamis", "Kliwon", 16],
+                ["Kamis", "Legi", 13],
+                ["Jum'at", "Pon", 13],
+                ["Jum'at", "Wage", 10],
+                ["Sabtu", "Pon", 16],
+                ["Sabtu", "Wage", 13]
+            ],
+            2: [
+                ["Minggu", "Pahing", 14],
+                ["Senin", "Pon", 11],
+                ["Senin", "Wage", 8],
+                ["Selasa", "Kliwon", 11],
+                ["Selasa", "Legi", 8],
+                ["Rabu", "Pon", 14],
+                ["Rabu", "Wage", 11],
+                ["Kamis", "Pahing", 17],
+                ["Jum'at", "Kliwon", 14],
+                ["Jum'at", "Legi", 11],
+                ["Sabtu", "Kliwon", 17],
+                ["Sabtu", "Legi", 14]
+            ]
+        };
+
+        const hariPandawa = {
+            "Aboge": [
+                ["Selasa", "Wage"],
+                ["Rabu", "Legi"],
+                ["Kamis", "Pon"],
+                ["Sabtu", "Kliwon"],
+                ["Minggu", "Pahing"]
+            ],
+            "Asapon": [
+                ["Senin", "Pon"],
+                ["Selasa", "Kliwon"],
+                ["Rabu", "Pahing"],
+                ["Jum'at", "Wage"],
+                ["Sabtu", "Legi"]
+            ]
+        };
+
+        const pasanganPandawa = new Set();
+        for (const kelompok of Object.values(hariPandawa)) {
+            for (const [h, p] of kelompok) {
+                pasanganPandawa.add(h + '|' + p);
+            }
+        }
+
+        const aturanBulan = {
+            "Sura": "larangan",
+            "Sapar": "boleh",
+            "Mulud": "larangan",
+            "Ba'da Mulud": "boleh",
+            "Jumadilawal": "boleh",
+            "Jumadilakir": "baik",
+            "Rejeb": "baik",
+            "Ruwah": "baik",
+            "Pasa": "larangan",
+            "Sawal": "boleh",
+            "Sela": "larangan",
+            "Besar": "baik"
+        };
+
+        // Taliwangké (dina sengkala) — Kitab Primbon Betaljemur Adammakna, No. 5
+        // 6 dina taliwangké dalam siklus 30 wuku
+        const taliwangke = [
+            { wuku: "Wuyé",     nama: "Somayé",       hari: "Senin Kliwon",  lambang: "Pasangan manuk" },
+            { wuku: "Wayang",   nama: "Anggarayang",  hari: "Selasa Legi",   lambang: "Téja lumaku patiné andaka wana" },
+            { wuku: "Landep",   nama: "Bodanep",      hari: "Rabu Pahing",   lambang: "Iwak pringga mati" },
+            { wuku: "Warigalit", nama: "Warigamis",   hari: "Kamis Pon",     lambang: "Jalma mati" },
+            { wuku: "Kuningan", nama: "Sukraingan",   hari: "Jum'at Wage",   lambang: "Tuwuhan gagar" },
+            { wuku: "Kuruwelut", nama: "Tumpaklote",  hari: "Sabtu Kliwon",  lambang: "Kapas agring" }
+        ];
+
+        function getHariBaik(lakiHari, lakiPasaran, perempuanHari, perempuanPasaran) {
+            const totalLaki = hari[lakiHari] + pasaran[lakiPasaran];
+            const totalPerempuan = hari[perempuanHari] + pasaran[perempuanPasaran];
+            const total = totalLaki + totalPerempuan;
+            const sisa = total % 3;
+            let key;
+            if (sisa === 0) key = 2;
+            else if (sisa === 1) key = 1;
+            else key = 0;
+            const daftar = dataKelompok[key] || [];
+            return daftar.filter(([h, p]) => !pasanganPandawa.has(h + '|' + p));
+        }
+
+
+    const $ = id => document.getElementById(id);
+    $('pkTahun').value = new JavaneseCalendarJS(new Date()).year;
+    const opt = (id, arr) => arr.forEach(x => $(id).add(new Option(x, x)));
+    opt('pkLH', Object.keys(hari)); opt('pkPH', Object.keys(hari));
+    opt('pkLP', Object.keys(pasaran)); opt('pkPP', Object.keys(pasaran));
+
+    function kematianHTML() {
+        let h = '';
+        for (let i = 0; i < 4; i++) h += `<select class="pkKH"><option value="">— hari —</option>${Object.keys(hari).map(x => `<option>${x}</option>`).join('')}</select><select class="pkKP"><option value="">— pasaran —</option>${Object.keys(pasaran).map(x => `<option>${x}</option>`).join('')}</select>`;
+        return h;
+    }
+    let current = [];
+    // Urutan eksplisit sesuai mesin kalender: kal.di (0 = Ahad) dan kal.pi (0 = Legi)
+    const HARI_KEYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', "Jum'at", 'Sabtu'];
+    const PAS_KEYS = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
+    const WUKU_ALIAS = { 'Wuyé': 'Wujé', 'Wayang': 'Wajang' };                // ejaan Wikisource → ejaan kalender
+    const twSet = new Set(taliwangke.map(t => {
+        const i = WUKU.indexOf(WUKU_ALIAS[t.wuku] || t.wuku);
+        if (i < 0) console.warn('Wuku Taliwangké tidak dikenali:', t.wuku);
+        return i + '|' + t.hari;
+    }));
+    const statusBulan = Object.values(aturanBulan);                           // urutan = MONTHS_JAWA
+
+    function cariTanggal(year) {
+        const ks = new Set();
+        const hs = document.querySelectorAll('.pkKH'), ps = document.querySelectorAll('.pkKP');
+        hs.forEach((x, i) => { if (x.value && ps[i].value) ks.add(x.value + '|' + ps[i].value); });
+        const baik = new Map(current.filter(([h, p]) => !ks.has(h + '|' + p)).map(([h, p, v]) => [h + '|' + p, v]));
+        const suwung = new Set(getBulanTanpaAnggaraKasih(year));
+        const start = fromJavanese(year, 'Sura', 1);
+        const out = [], twDays = [], cnt = { neptu: 0, larangan: 0, suwung: 0, tw: 0 };
+        if (!start) return { out, cnt, twDays, suwung: [...suwung] };
+        for (let d = 0; d < 400; d++) {
+            const kal = new JavaneseCalendarJS(new Date(start.getTime() + d * 86400000));
+            if (kal.year !== year) break;
+            const hp = HARI_KEYS[kal.di] + ' ' + PAS_KEYS[kal.pi];
+            const v = baik.get(HARI_KEYS[kal.di] + '|' + PAS_KEYS[kal.pi]);
+            if (v === undefined) continue;
+            cnt.neptu++;
+            // tiap aturan dihitung sendiri-sendiri; satu hari bisa kena lebih dari satu aturan
+            const lar = statusBulan[kal.mi] === 'larangan', suw = suwung.has(kal.monthJawa), tw = twSet.has(kal.wi + '|' + hp);
+            if (lar) cnt.larangan++;
+            if (suw) cnt.suwung++;
+            if (tw) { cnt.tw++; twDays.push({ kal, hp, lain: lar || suw }); }
+            if (lar || suw || tw) continue;
+            out.push({ kal, hp, v });
+        }
+        return { out, cnt, twDays, suwung: [...suwung] };
+    }
+
+    function renderList() {
+        const year = parseInt($('pkTahun').value, 10);
+        const r = cariTanggal(year);
+        const iso10 = k => k.gregDate.toISOString().slice(0, 10);
+        let html = `<div class="alert ${r.out.length ? 'ok' : ''}" style="margin-bottom:10px">AJ ${year}: ${r.out.length} tanggal baik.
+            <small style="display:block;color:var(--muted)">Dari ${r.cnt.neptu} hari yang cocok neptu (bukan Pandawa/kematian), kena aturan: bulan larangan ${r.cnt.larangan} · bulan tanpa Anggara Kasih ${r.cnt.suwung} · Taliwangké ${r.cnt.tw}. Satu hari bisa kena lebih dari satu aturan.</small></div>`;
+        html += r.twDays.length
+            ? `<div class="pk-box red" style="margin-bottom:10px"><h4>Taliwangké dibuang · ${r.twDays.length} hari</h4>${r.twDays.map(({ kal, hp, lain }) => `<div class="pk-row"><span>${kal.day} ${kal.monthJawa} · ${hp}<small>${iso10(kal)} · Wuku ${kal.wName}${lain ? ' · bulannya juga dibuang' : ''}</small></span></div>`).join('')}</div>`
+            : `<div class="pk-box" style="margin-bottom:10px"><h4>Taliwangké</h4><div style="font-size:.85rem;color:var(--muted)">Tidak ada hari yang cocok neptu jatuh pada Taliwangké di AJ ${year}.</div></div>`;
+        let last = '';
+        for (const { kal, hp, v } of r.out) {
+            if (kal.monthJawa !== last) { html += `<div class="pk-sec" style="margin:14px 0 6px;font-size:.95rem">${kal.monthJawa}</div>`; last = kal.monthJawa; }
+            html += `<div class="pk-row"><span>${kal.day} ${kal.monthJawa} · ${hp}<small>${iso10(kal)} · Wuku ${kal.wName}</small></span><span class="badge gold">${v}</span></div>`;
+        }
+        $('pkSuwung').innerHTML = r.suwung.length
+            ? `<div style="font-size:.78rem;color:var(--muted)">AJ ${year} · tanpa Anggara Kasih, dibuang dari hasil:</div><div class="pill-list" style="margin-top:6px">${r.suwung.map(x => `<span class="badge warn">${x}</span>`).join('')}</div>`
+            : `<div style="font-size:.78rem;color:var(--muted)">AJ ${year} · semua bulan memiliki Anggara Kasih.</div>`;
+        $('pkFinal').innerHTML = html;
+        $('pkCount').textContent = r.out.length;
+    }
+    const tags = a => a.map(x => `<span class="badge">${x}</span>`).join('');
+    const byStatus = s => Object.entries(aturanBulan).filter(([, v]) => v === s).map(([k]) => k);
+
+    $('pkHitung').addEventListener('click', () => {
+        const lH = $('pkLH').value, lP = $('pkLP').value, pH = $('pkPH').value, pP = $('pkPP').value;
+        const tL = hari[lH] + pasaran[lP], tP = hari[pH] + pasaran[pP], tot = tL + tP;
+        current = getHariBaik(lH, lP, pH, pP);
+        $('pkOut').innerHTML = `
+          <div class="pk-box"><div class="pk-row"><span>${lH} + ${lP}</span><span>${tL}</span></div>
+            <div class="pk-row"><span>${pH} + ${pP}</span><span>${tP}</span></div>
+            <div class="pk-row"><span>Total</span><span>${tot}, sisa ${tot % 3}</span></div></div>
+          <div class="pk-sec">Eliminasi kematian (maks. 4)</div>
+          <div class="pk-box"><div class="pk-km">${kematianHTML()}</div>
+            <div class="btn-row" style="margin-top:10px"><button class="ghost" id="pkApply">Terapkan filter</button></div></div>
+          <div class="pk-sec">Tanggal baik · <span id="pkCount">0</span></div>
+          <div class="pk-box" id="pkFinal"></div>
+          <div class="pk-sec">Bulan baik &amp; larangan</div>
+          <div class="pk-grid">
+            <div class="pk-box"><h4>Baik</h4><div class="pill-list">${tags(byStatus('baik'))}</div></div>
+            <div class="pk-box"><h4>Boleh</h4><div class="pill-list">${tags(byStatus('boleh'))}</div></div>
+            <div class="pk-box red"><h4>Larangan</h4><div class="pill-list">${tags(byStatus('larangan'))}</div></div>
+            <div class="pk-box red"><h4>Hindari</h4><div style="font-size:.88rem">Hindari bulan tanpa Anggara Kasih (Selasa Kliwon)</div><div id="pkSuwung" style="margin-top:8px"></div></div>
+          </div>
+          <div class="pk-sec">Hari larangan Taliwangké · ${taliwangke.length}</div>
+          <div class="pk-box red">${taliwangke.map((t, i) => `<div class="pk-row"><span>${i + 1}. Wuku ${t.wuku}<small>${t.nama} · ${t.lambang}</small></span><b>${t.hari}</b></div>`).join('')}</div>
+          <div class="pk-sec">Dina Pandawa · ${pasanganPandawa.size}</div>
+          <div class="pk-grid">${Object.entries(hariPandawa).map(([n, d]) => `<div class="pk-box red"><h4>${n}</h4><div class="pill-list">${tags(d.map(([h, p]) => h + ' ' + p))}</div></div>`).join('')}</div>`;
+        $('pkApply').addEventListener('click', renderList);
+        renderList();
+    });
+})();
+
+// ============================================================
+//  PETANGAN PEJAH (tab8) — hitungan tanggal dan metode sar
+// ============================================================
+(function () {
+    const $ = id => document.getElementById(id);
+    const iso = d => d.toISOString().slice(0, 10);
+    const BLN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const fmt = d => `${d.getUTCDate()} ${BLN[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+    const mod = (x, m) => ((x % m) + m) % m;
+    const sel = n => n === 0 ? 'sama' : (n > 0 ? '+' : '−') + Math.abs(n) + ' hari';
+    const n = new Date();
+    $('pjTgl').value = iso(new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())));
+
+    function pendhak(kal, th) {
+        let day = kal.day, note = '', d = fromJavanese(kal.year + th, kal.monthJawa, day);
+        while (!d && day > 1) { day--; d = fromJavanese(kal.year + th, kal.monthJawa, day); note = `tanggal ${kal.day} tidak ada di AJ ${kal.year + th}, dipakai ${day}`; }
+        return { d, note };
+    }
+
+    // satu baris hasil: label kiri, hari pasaran + tanggal Jawa + Masehi/wuku di kanan
+    const baris = (lab, sub, hasil, kal, tag, warn) => `<div class="pj-row">
+        <div class="pj-lab">${lab}${sub ? `<em>${sub}</em>` : ''}</div>
+        <div><div class="pj-main">${hasil}${tag ? `<span class="pj-tag${warn ? ' warn' : ''}">${tag}</span>` : ''}</div>
+        ${kal ? `<div class="pj-jw">${kal.day} ${kal.monthJawa} AJ ${kal.year}</div><div class="pj-ms">${fmt(kal.gregDate)} · Wuku ${kal.wName}</div>` : '<div class="pj-ms">tanggal tidak ditemukan</div>'}</div></div>`;
+    const kartu = (judul, meta, isi) => `<div class="pj-card"><div class="pj-head"><b>${judul}</b><span>${meta}</span></div>${isi}</div>`;
+    const nama = k => `${k.dn} ${k.pn}`;
+
+    $('pjHitung').addEventListener('click', () => {
+        const v = $('pjTgl').value;
+        if (!v) { $('pjOut').innerHTML = '<div class="alert">Isi tanggal wafat dulu.</div>'; return; }
+        const [Y, M, D] = v.split('-').map(Number);
+        let base = new Date(Date.UTC(Y, M - 1, D));
+        const maghrib = $('pjMaghrib').checked;
+        if (maghrib) base = new Date(base.getTime() + 86400000);   // hari Jawa berganti saat Maghrib
+        const k0 = new JavaneseCalendarJS(base);
+        const add = x => new Date(base.getTime() + x * 86400000);
+        const kal = x => new JavaneseCalendarJS(add(x));
+        const hero = `<div class="pj-hero"><div class="pj-eyebrow">Wafat${maghrib ? ' · setelah Maghrib, dihitung hari berikutnya' : ''}</div>
+            <div class="pj-main">${nama(k0)}</div><div class="pj-jw">${k0.day} ${k0.monthJawa} AJ ${k0.year}</div><div class="pj-ms">${fmt(k0.gregDate)} · Wuku ${k0.wName}</div></div>`;
+
+        const LIST = [['Telung dina', 3], ['Pitung dina', 7], ['Patang puluh dina', 40], ['Satus dina', 100], ['Pendhak I', 354, 1], ['Pendhak II', 710, 2], ['Nyewu', 1000]];
+
+        // ---- Panel 1: hitungan tanggal ----
+        $('pjOut').innerHTML = hero + LIST.map(([nm, N, th]) => {
+            if (th) {
+                const p = pendhak(k0, th), kp = p.d ? new JavaneseCalendarJS(p.d) : null;
+                return kartu(nm, `+${th} tahun AJ`, baris('Tanggal Jawa', 'sama di kedua cara', kp ? nama(kp) : '—', kp, p.note, true));
+            }
+            return kartu(nm, `+${N} hari`, baris('Cara 1', `+${N} hari`, nama(kal(N)), kal(N)) + baris('Cara 2', `+${N - 1} hari`, nama(kal(N - 1)), kal(N - 1)));
+        }).join('');
+
+        // ---- Panel 2: metode sar (rumus tetap; Cara 2 mulai dari sehari sebelum wafat) ----
+        const sar = (N, mulai) => {
+            const sh = N % 7 || 7, sp = N % 5 || 5;
+            const di0 = mod(k0.di + mulai, 7), pi0 = mod(k0.pi + mulai, 5);
+            return { sh, sp, hasil: `${DAYS[mod(di0 + sh, 7)]} ${PASARAN[mod(pi0 + sp, 5)]}`, k: kal(N + mulai) };
+        };
+        const prev = new JavaneseCalendarJS(add(-1));
+        $('pjSar').innerHTML = `<div class="pj-hero"><div class="pj-eyebrow">Dasar hitung</div>
+            <div class="pj-jw" style="margin-top:0">Wafat <b>${nama(k0)}</b>. Hari maju dihitung mod 7 dan pasaran maju mod 5 (maju 7 = hari yang sama, maju 5 = pasaran yang sama).</div>
+            <div class="pj-legend" style="margin-top:6px"><b style="color:var(--text)">Cara 1</b> dihitung dari hari wafat. <b style="color:var(--text)">Cara 2</b> menganggap hari wafat = hari ke-1, jadi dihitung dari sehari sebelumnya (<b style="color:var(--text)">${nama(prev)}</b>) dengan sar yang sama.</div></div>`
+          + LIST.map(([nm, N, th]) => {
+            const a = sar(N, 0), b = sar(N, -1);
+            let cmp = '';
+            if (th) {
+                const p = pendhak(k0, th);
+                if (p.d) {
+                    const kp = new JavaneseCalendarJS(p.d);
+                    const d1 = Math.round((p.d - add(N)) / 86400000), d2 = Math.round((p.d - add(N - 1)) / 86400000);
+                    cmp = baris('Kalender', 'tanggal Jawa sama', nama(kp), kp, `${sel(d1)} / ${sel(d2)}`, d1 !== 0 || d2 !== 0);
+                }
+            }
+            return kartu(nm, `${N} hari`, baris('Cara 1', `${a.sh} sar ${a.sp}`, a.hasil, a.k) + baris('Cara 2', `${b.sh} sar ${b.sp}`, b.hasil, b.k) + cmp);
+        }).join('')
+          + `<div class="pj-legend">Pada baris Kalender, selisih dihitung terhadap Cara 1 / Cara 2. Sar memakai 354 hari (Pendhak I) dan 710 hari (Pendhak II) tetap, sedangkan tahun AJ sebenarnya 354 atau 355 hari, sehingga Pendhak menurut tanggal Jawa yang sama bisa berbeda 1–2 hari.</div>`;
+    });
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('Service worker gagal didaftarkan:', err));
+  });
+}
+</script>
+</body>
+</html>
