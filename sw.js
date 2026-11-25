@@ -1,6 +1,6 @@
 /* Anno Javanico — service worker
    Naikkan VERSION setiap kali Anda mengubah file aplikasi agar cache lama diganti. */
-const VERSION = 'anno-javanico-v1';
+const VERSION = 'anno-javanico-v2';
 const CORE = [
   './',
   './index.html',

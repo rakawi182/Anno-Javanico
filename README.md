@@ -1,6 +1,6 @@
 # Anno Javanico
 
-Kalender Jawa (Aji Saka & Pawukon): konversi Masehi ↔ Jawa, Anggara Kasih, kalender bulanan, Pranata Mangsa, Palakrama, dan Petangan Pejah. Satu halaman HTML, semua perhitungan berjalan di peramban, dan bisa dipasang sebagai aplikasi (PWA).
+Kalender Jawa (Aji Saka & Pawukon): konversi Masehi ↔ Jawa, Anggara Kasih, kalender bulanan, Pranata Mangsa, Palakrama, dan Petangan Pejah. Tersedia dalam tiga bahasa (Indonesia, Inggris, Krama Inggil). Satu halaman HTML, semua perhitungan berjalan di peramban, dan bisa dipasang sebagai aplikasi (PWA).
 
 **Aplikasi:** https://rakawi182.github.io/Anno-Javanico/
 
